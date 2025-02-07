@@ -200,20 +200,28 @@ version = "0.1.10"
 source = { editable = "." }
 dependencies = [
     { name = "dagster" },
-    { name = "dagster-duckdb" },
-    { name = "dagster-gcp" },
     { name = "dagster-pandas" },
     { name = "dagster-polars" },
+]
+
+[package.dev-dependencies]
+bigquery = [
+    { name = "dagster-gcp" },
+]
+duckdb = [
+    { name = "dagster-duckdb" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "dagster", specifier = ">=1.9.11" },
-    { name = "dagster-duckdb", specifier = ">=0.25.11" },
-    { name = "dagster-gcp", specifier = ">=0.25.11" },
     { name = "dagster-pandas", specifier = ">=0.25.11" },
     { name = "dagster-polars", specifier = ">=0.25.11" },
 ]
+
+[package.metadata.requires-dev]
+bigquery = [{ name = "dagster-gcp", specifier = ">=0.25.11" }]
+duckdb = [{ name = "dagster-duckdb", specifier = ">=0.25.11" }]
 
 [[package]]
 name = "dagster-duckdb"
@@ -286,7 +294,7 @@ wheels = [
 
 [[package]]
 name = "db-dtypes"
-version = "1.4.0"
+version = "1.4.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
@@ -294,9 +302,9 @@ dependencies = [
     { name = "pandas" },
     { name = "pyarrow" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5d/fb/b72a145f816538ea6faba20cb948171e19ddc45bb56d7faeb0ed1a1b38a2/db_dtypes-1.4.0.tar.gz", hash = "sha256:e715cfb015da72dbd47e9066d1fed7750d844fca03cd27a2af2c242bf84c0471", size = 33198 }
+sdist = { url = "https://files.pythonhosted.org/packages/fb/9d/b79951a768dc73e7785d057006143781ec26d91bd456b175c66b031dccdd/db_dtypes-1.4.1.tar.gz", hash = "sha256:36403e252c03c4a5073f67e4315015c7d1f57b2614f56d2037587e0743670fb8", size = 33554 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0a/56/14b84bb213daf84bfb966ffa69fdfbc674a5b02c758be6b0d945a733c1b9/db_dtypes-1.4.0-py2.py3-none-any.whl", hash = "sha256:e97eeabced46e77a7eaa634098909f2392b29cae50b1c4900b2d9dc2c3dbf205", size = 19009 },
+    { url = "https://files.pythonhosted.org/packages/68/cd/25215aed98e77685f7d0aa7536eaa51426ea07bcaa187e1907841405c960/db_dtypes-1.4.1-py2.py3-none-any.whl", hash = "sha256:84076e2f952174da3eea16c2692409a0d3ef88d27b68c24ee0c9262513fa26d4", size = 19028 },
 ]
 
 [[package]]
