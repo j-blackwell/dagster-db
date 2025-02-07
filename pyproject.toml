@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dagster-db"
-version = "0.1.4"
+version = "0.1.5.post14.dev0"
 description = "Dagster IO managers and type handlers for databases"
 readme = "README.md"
 license = { file = "LICENSE" }
