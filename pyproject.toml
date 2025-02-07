@@ -1,32 +1,30 @@
 [build-system]
-requires = ["hatchling"]
+requires = [ "hatchling",]
 build-backend = "hatchling.build"
 
 [project]
 name = "dagster-db"
-version = "0.1.5.post14.dev0"
+version = "0.1.9"
 description = "Dagster IO managers and type handlers for databases"
 readme = "README.md"
-license = { file = "LICENSE" }
 requires-python = ">=3.10,<3.14"
-dependencies = [
-    "dagster>=1.9.11",
-    "dagster-duckdb>=0.25.11",
-    "dagster-gcp>=0.25.11",
-    "dagster-pandas>=0.25.11",
-    "dagster-polars>=0.25.11",
-]
-urls = { "Source" = "https://github.com/j-blackwell/dagster-db" }
-authors = [
-    { name = "James Blackwell", email = "33688964+j-blackwell@users.noreply.github.com" },
-]
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-]
+dependencies = [ "dagster>=1.9.11", "dagster-duckdb>=0.25.11", "dagster-gcp>=0.25.11", "dagster-pandas>=0.25.11", "dagster-polars>=0.25.11",]
+classifiers = [ "Development Status :: 3 - Alpha", "Programming Language :: Python :: 3.10", "Programming Language :: Python :: 3.11", "Programming Language :: Python :: 3.12", "Programming Language :: Python :: 3.13",]
+[[project.authors]]
+name = "James Blackwell"
+email = "33688964+j-blackwell@users.noreply.github.com"
+
+[dependency-groups]
+dev = [ "dunamai>=1.23.0", "toml>=0.10.2",]
+
+[project.license]
+file = "LICENSE"
+
+[project.urls]
+Source = "https://github.com/j-blackwell/dagster-db"
+
+[project.scripts]
+bump = "version:bump"
 
 [tool.hatch.build.targets.wheel]
-packages = ["dagster_db"]
+packages = [ "dagster_db",]

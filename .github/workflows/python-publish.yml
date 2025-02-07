@@ -39,16 +39,6 @@ jobs:
           git fetch --tags --force
           echo "VERSION=$(uvx --from=dunamai dunamai from any --no-metadata --style pep440)" >> "$GITHUB_ENV"
 
-      - name: Set version
-        run: |-
-          git pull
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          uvx --from=toml-cli toml set --toml-path=pyproject.toml project.version ${{env.VERSION}}
-          git add pyproject.toml
-          git commit -m "update version to tag ${{env.VERSION}}"
-          git push
-
       - name: Build
         run: uv build
 
