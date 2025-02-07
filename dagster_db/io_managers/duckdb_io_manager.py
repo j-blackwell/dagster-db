@@ -2,8 +2,8 @@ from typing import Optional, Sequence, Type
 import dagster as dg
 from dagster_duckdb.io_manager import DuckDBIOManager, DuckDbClient
 
-from io_managers.custom_db_io_manager import CustomDbIOManager
-from type_handlers.custom_type_handler import CustomDbTypeHandler
+from dagster_db.io_managers.custom_db_io_manager import CustomDbIOManager
+from dagster_db.type_handlers.custom_type_handler import CustomDbTypeHandler
 
 
 def build_custom_duckdb_io_manager(

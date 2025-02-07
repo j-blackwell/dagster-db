@@ -1,7 +1,7 @@
 [project]
 name = "dagster-db"
 version = "0.1.0"
-description = "Add your description here"
+description = "Dagster IO managers and type handlers for databases"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
