@@ -1,13 +1,13 @@
 [build-system]
-requires = ["setuptools>=61.0.0", "setuptools-scm"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "dagster-db"
-version = "0.1.3"
+version = "0.1.4"
 description = "Dagster IO managers and type handlers for databases"
 readme = "README.md"
-license = { text = "MIT" }
+license = { file = "LICENSE" }
 requires-python = ">=3.10,<3.14"
 dependencies = [
     "dagster>=1.9.11",
@@ -28,5 +28,5 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 
-[tool.setuptools.packages]
-find = {}
+[tool.hatch.build.targets.wheel]
+packages = ["dagster_db"]
