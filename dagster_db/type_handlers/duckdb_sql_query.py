@@ -12,7 +12,7 @@ from dagster_db.type_handlers.custom_type_handler import CustomDbTypeHandler
 from dagster_db.query.sql_query import SqlQuery
 
 
-class DuckDbQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection]):
+class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection]):
     @property
     def supported_types(self) -> Sequence[Type[object]]:
         return [SqlQuery]
