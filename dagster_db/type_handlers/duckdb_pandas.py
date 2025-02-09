@@ -22,7 +22,7 @@ class DuckDbPandasTypeHandler(CustomDbTypeHandler[pd.DataFrame, DuckDBPyConnecti
     def db_safe_transformations(self, context, obj: pd.DataFrame, connection: DuckDBPyConnection) -> pd.DataFrame:
         return obj
 
-    def output_metadata(self, context: dg.OutputContext, obj: pd.DataFrame, obj_db: pd.DataFrame):
+    def output_metadata(self, context: dg.OutputContext, obj: pd.DataFrame, obj_db: pd.DataFrame, connection: DuckDBPyConnection):
         return {
             "sample_obj": dg.MarkdownMetadataValue(get_sample_md(obj)),
             "sample_obj_db": dg.MarkdownMetadataValue(get_sample_md(obj_db)),

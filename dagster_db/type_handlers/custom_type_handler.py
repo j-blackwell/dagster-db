@@ -18,7 +18,7 @@ class CustomDbTypeHandler(DbTypeHandler, Generic[Obj, Conn]):
         pass
 
     @abstractmethod
-    def output_metadata(self, context: dg.OutputContext, obj: Obj, obj_db: Obj) -> dict[str, dg.MetadataValue]:
+    def output_metadata(self, context: dg.OutputContext, obj: Obj, obj_db: Obj, connection: Conn,) -> dict[str, dg.MetadataValue]:
         pass
 
     @abstractmethod
