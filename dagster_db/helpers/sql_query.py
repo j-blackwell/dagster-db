@@ -3,7 +3,7 @@ import pandas as pd
 import polars as pl
 import dagster as dg
 from duckdb import DuckDBPyConnection
-from dagster_db.helpers.db import execute_duckdb
+from dagster_db.helpers.duckdb import execute_duckdb
 from dagster_db.query.sql_query import SqlQuery
 
 

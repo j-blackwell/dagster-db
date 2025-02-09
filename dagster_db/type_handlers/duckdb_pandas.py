@@ -6,7 +6,7 @@ from duckdb import BinderException, DuckDBPyConnection, IOException
 from dagster_duckdb.io_manager import DuckDbClient
 from dagster._utils.backoff import backoff
 
-from dagster_db.helpers.db import table_slice_to_schema_table
+from dagster_db.helpers.generic_db import table_slice_to_schema_table
 from dagster_db.helpers.pandas import get_sample_md, get_table_schema, glimpse
 from dagster_db.type_handlers.custom_type_handler import CustomDbTypeHandler
 
