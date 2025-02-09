@@ -6,7 +6,7 @@ from duckdb import BinderException, DuckDBPyConnection, IOException
 from dagster_duckdb.io_manager import DuckDbClient
 from dagster._utils.backoff import backoff
 
-from dagster_db.helpers.db import table_slice_to_schema_table
+from dagster_db.helpers.generic_db import table_slice_to_schema_table
 from dagster_db.helpers.polars import get_sample_md, get_table_schema
 from dagster_db.type_handlers.custom_type_handler import CustomDbTypeHandler
 
@@ -22,7 +22,7 @@ class DuckDbPolarsTypeHandler(CustomDbTypeHandler[pl.DataFrame, DuckDBPyConnecti
     def db_safe_transformations(self, context, obj: pl.DataFrame, connection: DuckDBPyConnection) -> pl.DataFrame:
         return obj
 
-    def output_metadata(self, context: dg.OutputContext, obj: pl.DataFrame, obj_db: pl.DataFrame):
+    def output_metadata(self, context: dg.OutputContext, obj: pl.DataFrame, obj_db: pl.DataFrame, connections: DuckDBPyConnection,):
         return {
             "sample_obj": dg.MarkdownMetadataValue(get_sample_md(obj)),
             "sample_obj_db": dg.MarkdownMetadataValue(get_sample_md(obj_db)),
