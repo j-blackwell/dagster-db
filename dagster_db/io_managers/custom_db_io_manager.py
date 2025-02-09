@@ -54,16 +54,18 @@ class CustomDbIOManager(DbIOManager):
         return super().load_input(context)
 
 
-def build_custom_duckdb_io_manager(
+def build_custom_db_io_manager(
+    io_manager_base: dg.ConfigurableIOManagerFactory,
+    db_client: DbClient,
     type_handlers: Sequence[CustomDbTypeHandler],
     default_load_type: Optional[Type] = None,
-    io_manager_name: str = "DuckDbIoManager"
+    io_manager_name: str = "CustomDbIoManager"
 ) -> dg.IOManagerDefinition:
-    @dg.io_manager(config_schema=DuckDBIOManager.to_config_schema())
+    @dg.io_manager(config_schema=io_manager_base.to_config_schema())
     def duckdb_io_manager(init_context):
         return CustomDbIOManager(
             type_handlers=type_handlers,
-            db_client=DuckDbClient(),
+            db_client=db_client,
             io_manager_name=io_manager_name,
             database=init_context.resource_config["database"],
             schema=init_context.resource_config.get("schema"),
