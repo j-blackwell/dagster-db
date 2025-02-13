@@ -37,7 +37,12 @@ class SqlQuery:
 
         return self.template.render(**bindings_curated)
 
-class SqlExpr():
+    @property
+    def markdown(self) -> str:
+        return f"```sql\n{self.render()}\n```"
+
+
+class SqlExpr:
     def __init__(self, value: str, identifier: str = "`", add_identifier: bool = True):
         if add_identifier:
             self.value = f"{identifier}{value}{identifier}"

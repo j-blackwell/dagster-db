@@ -7,7 +7,12 @@ from dagster._utils.backoff import backoff
 
 from dagster_db.helpers.generic_db import table_slice_to_schema_table
 from dagster_db.helpers.duckdb import execute_duckdb
-from dagster_db.helpers.sql_query import get_sample_md, get_table_schema, get_rows, glimpse
+from dagster_db.helpers.sql_query import (
+    get_sample_md,
+    get_table_schema,
+    get_rows,
+    glimpse,
+)
 from dagster_db.type_handlers.custom_type_handler import CustomDbTypeHandler
 from dagster_db.query.sql_query import SqlQuery
 
@@ -42,9 +47,14 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
     ):
         return {
             "sample_obj": dg.MarkdownMetadataValue(get_sample_md(obj, connection)),
-            "sample_obj_db": dg.MarkdownMetadataValue(get_sample_md(obj_db, connection)),
+            "sample_obj_db": dg.MarkdownMetadataValue(
+                get_sample_md(obj_db, connection)
+            ),
             "rows": dg.IntMetadataValue(get_rows(obj, connection)),
-            "table_schema": dg.TableSchemaMetadataValue(get_table_schema(obj, connection)),
+            "table_schema": dg.TableSchemaMetadataValue(
+                get_table_schema(obj, connection)
+            ),
+            "query_rendered": dg.MarkdownMetadataValue(obj_db.markdown),
         }
 
     def _load_into_db(
@@ -53,10 +63,18 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
         obj: SqlQuery,
         connection: DuckDBPyConnection,
     ):
-        ctas_query = SqlQuery("CREATE TABLE IF NOT EXISTS {{ table_schema }} AS SELECT * FROM {{ obj }}", table_schema=table_schema, obj=obj)
+        ctas_query = SqlQuery(
+            "CREATE TABLE IF NOT EXISTS {{ table_schema }} AS SELECT * FROM {{ obj }}",
+            table_schema=table_schema,
+            obj=obj,
+        )
         execute_duckdb(ctas_query, connection)
         if not connection.fetchall():
-            insert_query = SqlQuery("INSERT INTO {{ table_schema }} SELECT * FROM {{ obj }}", table_schema=table_schema, obj=obj)
+            insert_query = SqlQuery(
+                "INSERT INTO {{ table_schema }} SELECT * FROM {{ obj }}",
+                table_schema=table_schema,
+                obj=obj,
+            )
             execute_duckdb(insert_query, connection)
 
     def handle_output(
@@ -67,7 +85,9 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
         connection: DuckDBPyConnection,
     ):
         table_schema = table_slice_to_schema_table(table_slice)
-        create_schema_query = SqlQuery("CREATE SCHEMA IF NOT EXISTS {{ schema }}", schema=table_slice.schema)
+        create_schema_query = SqlQuery(
+            "CREATE SCHEMA IF NOT EXISTS {{ schema }}", schema=table_slice.schema
+        )
         execute_duckdb(create_schema_query, connection)
 
         try:
