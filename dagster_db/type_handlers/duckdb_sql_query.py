@@ -14,7 +14,7 @@ from dagster_db.helpers.sql_query import (
     glimpse,
 )
 from dagster_db.type_handlers.custom_type_handler import CustomDbTypeHandler
-from dagster_db.query.sql_query import SqlQuery
+from dagster_db.query.sql_query import SqlExpr, SqlQuery
 
 
 class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection]):
@@ -65,14 +65,14 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
     ):
         ctas_query = SqlQuery(
             "CREATE TABLE IF NOT EXISTS {{ table_schema }} AS SELECT * FROM {{ obj }}",
-            table_schema=table_schema,
+            table_schema=SqlExpr(table_schema),
             obj=obj,
         )
         execute_duckdb(ctas_query, connection)
         if not connection.fetchall():
             insert_query = SqlQuery(
                 "INSERT INTO {{ table_schema }} SELECT * FROM {{ obj }}",
-                table_schema=table_schema,
+                table_schema=SqlExpr(table_schema),
                 obj=obj,
             )
             execute_duckdb(insert_query, connection)
@@ -86,7 +86,8 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
     ):
         table_schema = table_slice_to_schema_table(table_slice)
         create_schema_query = SqlQuery(
-            "CREATE SCHEMA IF NOT EXISTS {{ schema }}", schema=table_slice.schema
+            "CREATE SCHEMA IF NOT EXISTS {{ schema }}",
+            schema=SqlExpr(table_slice.schema),
         )
         execute_duckdb(create_schema_query, connection)
 

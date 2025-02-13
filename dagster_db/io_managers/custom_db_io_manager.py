@@ -4,9 +4,11 @@ from typing import (
     Type,
     Any,
 )
+from pathlib import Path
 
 from dagster._core.storage.db_io_manager import DbIOManager, DbClient
 import dagster as dg
+import dagster._check as check
 
 from dagster_db.type_handlers.custom_type_handler import CustomDbTypeHandler
 
@@ -22,19 +24,31 @@ class CustomDbIOManager(DbIOManager):
         io_manager_name: Optional[str] = None,
         default_load_type: Optional[Type] = None,
     ):
-        # TODO: validate type_handlers
-        # TODO: don't inherit init?
+        self._handlers_by_type: dict[Optional[type[Any]], CustomDbTypeHandler] = {}  # type: ignore
+        self._io_manager_name = io_manager_name or self.__class__.__name__
+        for type_handler in type_handlers:
+            for handled_type in type_handler.supported_types:
+                check.invariant(
+                    handled_type not in self._handlers_by_type,
+                    f"{self._io_manager_name} provided with two handlers for the same type. "
+                    f"Type: '{handled_type}'. Handler classes: '{type(type_handler)}' and "
+                    f"'{type(self._handlers_by_type.get(handled_type))}'.",
+                )
+                self._handlers_by_type[handled_type] = type_handler
 
-        super().__init__(
-            type_handlers=type_handlers,
-            db_client=db_client,
-            database=database,
-            schema=schema,
-            io_manager_name=io_manager_name,
-            default_load_type=default_load_type,
-        )
+        Path(database).parent.mkdir(parents=True, exist_ok=True)
 
-        self._handlers_by_type: dict[type[Any], CustomDbTypeHandler] # type: ignore
+        self._db_client = db_client
+        self._database = database
+        self._schema = schema
+        if (
+            default_load_type is None
+            and len(type_handlers) == 1
+            and len(type_handlers[0].supported_types) == 1
+        ):
+            self._default_load_type = type_handlers[0].supported_types[0]
+        else:
+            self._default_load_type = default_load_type
 
     def handle_output(self, context: dg.OutputContext, obj: object) -> None:
         obj_type = type(obj)
@@ -48,7 +62,9 @@ class CustomDbIOManager(DbIOManager):
 
             context.log.debug("all validation successful")
             super().handle_output(context, obj)
-            context.add_output_metadata(handler.output_metadata(context, obj, obj_db, conn))
+            context.add_output_metadata(
+                handler.output_metadata(context, obj, obj_db, conn)
+            )
 
     def load_input(self, context: dg.InputContext) -> object:
         return super().load_input(context)
@@ -59,7 +75,7 @@ def build_custom_db_io_manager(
     db_client: DbClient,
     type_handlers: Sequence[CustomDbTypeHandler],
     default_load_type: Optional[Type] = None,
-    io_manager_name: str = "CustomDbIoManager"
+    io_manager_name: str = "CustomDbIoManager",
 ) -> dg.IOManagerDefinition:
     @dg.io_manager(config_schema=io_manager_base.to_config_schema())
     def duckdb_io_manager(init_context):
