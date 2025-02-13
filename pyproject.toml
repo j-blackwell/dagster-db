@@ -17,6 +17,9 @@ email = "33688964+j-blackwell@users.noreply.github.com"
 [dependency-groups]
 bigquery = [ "dagster-gcp>=0.25.11",]
 duckdb = [ "dagster-duckdb>=0.25.11",]
+dev = [
+    "pytest>=8.3.4",
+]
 
 [project.license]
 file = "LICENSE"
