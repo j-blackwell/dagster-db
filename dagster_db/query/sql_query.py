@@ -1,3 +1,4 @@
+import datetime as dt
 from jinja2 import Template, StrictUndefined, Environment
 from pandas import Timestamp
 import typing as t
@@ -24,13 +25,15 @@ class SqlQuery:
                     f"'{x}'" if isinstance(x, str) else str(x) for x in value
                 ]
                 bindings_curated[key] = f"({','.join(values_list)})"
+            elif isinstance(value, (dt.datetime, dt.date, Timestamp)):
+                bindings_curated[key] = f"'{str(value)}'"
             elif isinstance(value, str):
                 try:
                     value_dt = Timestamp(value)
                     bindings_curated[key] = f"'{str(value_dt)}'"
                 except ValueError:
                     bindings_curated[key] = f"'{value}'"
-            elif isinstance(value, SqlExpr):
+            elif isinstance(value, (SqlExpr, SqlColumn)):
                 bindings_curated[key] = value.value
             else:
                 bindings_curated[key] = value
@@ -43,8 +46,10 @@ class SqlQuery:
 
 
 class SqlExpr:
-    def __init__(self, value: str, identifier: str = "`", add_identifier: bool = True):
-        if add_identifier:
-            self.value = f"{identifier}{value}{identifier}"
-        else:
-            self.value = value
+    def __init__(self, value: str):
+        self.value = value
+
+
+class SqlColumn:
+    def __init__(self, value: str, identifier: str = "`"):
+        self.value = f"{identifier}{value}{identifier}"

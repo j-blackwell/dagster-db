@@ -1,8 +1,7 @@
 from dagster_db.io_managers.custom_db_io_manager import build_custom_db_io_manager
 from dagster_db.io_managers.duckdb_io_manager import build_custom_duckdb_io_manager
-from dagster_db.query.sql_query import SqlExpr, SqlQuery
+from dagster_db.query.sql_query import SqlExpr, SqlQuery, SqlColumn
 from dagster_db.type_handlers.custom_type_handler import CustomDbTypeHandler
 from dagster_db.type_handlers.duckdb_pandas import DuckDbPandasTypeHandler
 from dagster_db.type_handlers.duckdb_polars import DuckDbPolarsTypeHandler
 from dagster_db.type_handlers.duckdb_sql_query import DuckDbSqlQueryTypeHandler
-
