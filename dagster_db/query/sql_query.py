@@ -1,3 +1,4 @@
+import datetime as dt
 from jinja2 import Template, StrictUndefined, Environment
 from pandas import Timestamp
 import typing as t
@@ -24,6 +25,8 @@ class SqlQuery:
                     f"'{x}'" if isinstance(x, str) else str(x) for x in value
                 ]
                 bindings_curated[key] = f"({','.join(values_list)})"
+            elif isinstance(value, (dt.datetime, dt.date, Timestamp)):
+                bindings_curated[key] = f"'{str(value)}'"
             elif isinstance(value, str):
                 try:
                     value_dt = Timestamp(value)
