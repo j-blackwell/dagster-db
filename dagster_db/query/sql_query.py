@@ -29,30 +29,31 @@ class SqlQuery:
     def add_bindings(self, *args: t.Any, **kwargs: t.Any):
         self.bindings = self.bindings | dict(*args, **kwargs)
 
+    def _render_value(self, value: t.Any) -> str:
+        if isinstance(value, SqlQuery):
+            return f"({value.render()})"
+        elif isinstance(value, list):
+            values_list = [self._render_value(v) for v in value]
+            return f"({','.join(values_list)})"
+        elif isinstance(value, (dt.datetime, dt.date, Timestamp)):
+            return f"'{str(value)}'"
+        elif isinstance(value, str):
+            try:
+                return self._render_value(Timestamp(value))
+            except ValueError:
+                return f"'{value}'"
+        elif isinstance(value, (SqlExpr, SqlColumn)):
+            return value.value
+        else:
+            return str(value)
+
     def render(self, *args: t.Any, **kwargs: t.Any) -> str:
+        """Render all bindings in the query string."""
         bindings_original = self.bindings | dict(*args, **kwargs)
 
         bindings_curated = {}
         for key, value in bindings_original.items():
-            if isinstance(value, SqlQuery):
-                bindings_curated[key] = f"({value.render()})"
-            elif isinstance(value, list):
-                values_list = [
-                    f"'{x}'" if isinstance(x, str) else str(x) for x in value
-                ]
-                bindings_curated[key] = f"({','.join(values_list)})"
-            elif isinstance(value, (dt.datetime, dt.date, Timestamp)):
-                bindings_curated[key] = f"'{str(value)}'"
-            elif isinstance(value, str):
-                try:
-                    value_dt = Timestamp(value)
-                    bindings_curated[key] = f"'{str(value_dt)}'"
-                except ValueError:
-                    bindings_curated[key] = f"'{value}'"
-            elif isinstance(value, (SqlExpr, SqlColumn)):
-                bindings_curated[key] = value.value
-            else:
-                bindings_curated[key] = value
+            bindings_curated[key] = self._render_value(value)
 
         return self.template.render(**bindings_curated)
 
