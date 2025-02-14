@@ -14,6 +14,11 @@ from dagster_db.type_handlers.custom_type_handler import CustomDbTypeHandler
 
 
 class DuckDbPolarsTypeHandler(CustomDbTypeHandler[pl.DataFrame, DuckDBPyConnection]):
+    """
+    Base-class for duckdb-polars type handler that handles read/write, and adds
+    metadata, but doesn't include object validation or db_safe_transformations.
+    """
+
     @property
     def supported_types(self) -> Sequence[Type[object]]:
         return [pl.DataFrame]

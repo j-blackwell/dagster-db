@@ -18,6 +18,13 @@ def build_custom_duckdb_io_manager(
     default_load_type: Optional[Type] = None,
     io_manager_name: str = "DuckDbIoManager",
 ) -> dg.IOManagerDefinition:
+    """
+    Create a configurable IO manager out of the `custom_db_io_manager` and
+    type handlers.
+
+    Configure with the `.configure()` method. `database` is a required key,
+    `schema` is optional and can be set at the asset level.
+    """
     return build_custom_db_io_manager(
         io_manager_base=DuckDBIOManager,
         db_client=DuckDbClient(),
