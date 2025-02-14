@@ -8,7 +8,13 @@ from dagster._core.storage.db_io_manager import TableSlice
 Obj = TypeVar("Obj")
 Conn = TypeVar("Conn")
 
+
 class CustomDbTypeHandler(DbTypeHandler, Generic[Obj, Conn]):
+    """
+    Base-class to be used when creating type handlers that follow the
+    logic of the `custom_db_io_manager`.
+    """
+
     @abstractmethod
     def validate_obj_db(self, context, obj_db: Obj, connection: Conn):
         pass
@@ -18,7 +24,13 @@ class CustomDbTypeHandler(DbTypeHandler, Generic[Obj, Conn]):
         pass
 
     @abstractmethod
-    def output_metadata(self, context: dg.OutputContext, obj: Obj, obj_db: Obj, connection: Conn,) -> dict[str, dg.MetadataValue]:
+    def output_metadata(
+        self,
+        context: dg.OutputContext,
+        obj: Obj,
+        obj_db: Obj,
+        connection: Conn,
+    ) -> dict[str, dg.MetadataValue]:
         pass
 
     @abstractmethod
@@ -39,7 +51,6 @@ class CustomDbTypeHandler(DbTypeHandler, Generic[Obj, Conn]):
         connection: Conn,
     ) -> Obj:
         pass
-
 
     @property
     @abstractmethod

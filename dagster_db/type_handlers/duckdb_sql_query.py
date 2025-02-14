@@ -18,6 +18,11 @@ from dagster_db.query.sql_query import SqlExpr, SqlQuery
 
 
 class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection]):
+    """
+    Base-class for duckdb-sql type handler that handles read/write, and adds
+    metadata, but doesn't include object validation or db_safe_transformations.
+    """
+
     @property
     def supported_types(self) -> Sequence[Type[object]]:
         return [SqlQuery]
