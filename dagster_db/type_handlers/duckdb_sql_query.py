@@ -59,6 +59,7 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
             "table_schema": dg.TableSchemaMetadataValue(
                 get_table_schema(obj, connection)
             ),
+            "query_raw": dg.MarkdownMetadataValue(str(obj_db.template)),
             "query_rendered": dg.MarkdownMetadataValue(obj_db.markdown),
         }
 
