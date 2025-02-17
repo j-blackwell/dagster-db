@@ -14,9 +14,11 @@ classifiers = [ "Development Status :: 3 - Alpha", "Programming Language :: Pyth
 name = "James Blackwell"
 email = "33688964+j-blackwell@users.noreply.github.com"
 
-[dependency-groups]
+[optional-dependencies]
 bigquery = [ "dagster-gcp>=0.25.11",]
 duckdb = [ "dagster-duckdb>=0.25.11",]
+
+[dependency-groups]
 dev = [ "pytest>=8.3.4",]
 
 [project.license]
