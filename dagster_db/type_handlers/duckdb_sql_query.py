@@ -43,7 +43,7 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
     ) -> SqlQuery:
         return obj
 
-    def output_metadata(
+    def metadata(
         self,
         context: dg.OutputContext,
         obj: SqlQuery,
@@ -52,15 +52,35 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
     ):
         return {
             "sample_obj": dg.MarkdownMetadataValue(get_sample_md(obj, connection)),
-            "sample_obj_db": dg.MarkdownMetadataValue(
-                get_sample_md(obj_db, connection)
+            **(
+                {
+                    "sample_obj_db": dg.MarkdownMetadataValue(
+                        get_sample_md(obj_db, connection)
+                    )
+                }
+                if obj_db is not None
+                else {}
             ),
             "rows": dg.IntMetadataValue(get_rows(obj, connection)),
-            "table_schema": dg.TableSchemaMetadataValue(
-                get_table_schema(obj, connection)
+            **(
+                {
+                    "table_schema": dg.TableSchemaMetadataValue(
+                        get_table_schema(obj_db, connection)
+                    )
+                }
+                if obj_db is not None
+                else {}
             ),
-            "query_raw": dg.MarkdownMetadataValue(str(obj_db.template)),
-            "query_rendered": dg.MarkdownMetadataValue(obj_db.markdown),
+            **(
+                {"query_raw": dg.MarkdownMetadataValue(str(obj_db.template))}
+                if obj_db is not None
+                else {}
+            ),
+            **(
+                {"query_rendered": dg.MarkdownMetadataValue(obj_db.markdown)}
+                if obj_db is not None
+                else {}
+            ),
         }
 
     def _load_into_db(

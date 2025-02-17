@@ -3,8 +3,10 @@ from typing import (
     Sequence,
     Type,
     Any,
+    cast,
 )
 from pathlib import Path
+import time
 
 from dagster._core.storage.db_io_manager import DbIOManager, DbClient
 import dagster as dg
@@ -51,6 +53,7 @@ class CustomDbIOManager(DbIOManager):
             self._default_load_type = default_load_type
 
     def handle_output(self, context: dg.OutputContext, obj: object) -> None:
+        t0 = time.perf_counter()
         obj_type = type(obj)
         self._check_supported_type(obj_type)
         table_slice = self._get_table_slice(context, context)
@@ -62,12 +65,47 @@ class CustomDbIOManager(DbIOManager):
 
             context.log.debug("all validation successful")
             super().handle_output(context, obj)
+            t1 = time.perf_counter()
             context.add_output_metadata(
-                handler.output_metadata(context, obj, obj_db, conn)
+                {
+                    **handler.metadata(context, obj, obj_db, conn),
+                    "io_time": dg.FloatMetadataValue(t1 - t0),
+                }
             )
 
     def load_input(self, context: dg.InputContext) -> object:
-        return super().load_input(context)
+        t0 = time.perf_counter()
+
+        obj_type = context.dagster_type.typing_type
+        if obj_type is Any and self._default_load_type is not None:
+            load_type = self._default_load_type
+        else:
+            load_type = obj_type
+
+        self._check_supported_type(load_type)
+
+        table_slice = self._get_table_slice(
+            context, cast(dg.OutputContext, context.upstream_output)
+        )
+
+        with self._db_client.connect(context, table_slice) as conn:
+            obj = self._handlers_by_type[load_type].load_input(
+                context, table_slice, conn
+            )  # type: ignore  # (pyright bug)
+            t1 = time.perf_counter()
+
+            context.add_input_metadata(
+                {
+                    **self._handlers_by_type[load_type].metadata(
+                        cast(dg.OutputContext, context.upstream_output),
+                        obj,
+                        None,
+                        connection=conn,
+                    ),
+                    "io_time": dg.FloatMetadataValue(t1 - t0),
+                }
+            )
+        return obj
 
 
 def build_custom_db_io_manager(
