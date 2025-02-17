@@ -33,18 +33,26 @@ class DuckDbPolarsTypeHandler(CustomDbTypeHandler[pl.DataFrame, DuckDBPyConnecti
     ) -> pl.DataFrame:
         return obj
 
-    def output_metadata(
+    def metadata(
         self,
         context: dg.OutputContext,
         obj: pl.DataFrame,
         obj_db: pl.DataFrame,
-        connections: DuckDBPyConnection,
+        connection: DuckDBPyConnection,
     ):
         return {
             "sample_obj": dg.MarkdownMetadataValue(get_sample_md(obj)),
-            "sample_obj_db": dg.MarkdownMetadataValue(get_sample_md(obj_db)),
+            **(
+                {"sample_obj_db": dg.MarkdownMetadataValue(get_sample_md(obj_db))}
+                if obj_db is not None
+                else {}
+            ),
             "rows": dg.IntMetadataValue(obj.height),
-            "table_schema": dg.TableSchemaMetadataValue(get_table_schema(obj_db)),
+            **(
+                {"table_schema": dg.TableSchemaMetadataValue(get_table_schema(obj_db))}
+                if obj_db is not None
+                else {}
+            ),
         }
 
     def _load_into_db(
@@ -115,5 +123,4 @@ class DuckDbPolarsTypeHandler(CustomDbTypeHandler[pl.DataFrame, DuckDBPyConnecti
 
         query = DuckDbClient.get_select_statement(table_slice)
         obj = execute_duckdb(SqlQuery(query), connection, return_type=pl.DataFrame)
-        context.log.debug(obj.glimpse())
         return obj
