@@ -5,6 +5,7 @@ import dagster as dg
 from duckdb import DuckDBPyConnection
 from dagster_db.helpers.duckdb import execute_duckdb
 from dagster_db.query.sql_query import SqlExpr, SqlQuery
+from dagster_db.helpers.pandas import get_sample_md as get_sample_md_pd
 
 
 def get_sample_md(
@@ -21,7 +22,7 @@ def get_sample_md(
         n=n,
     )
     df = execute_duckdb(sample_query, connection, return_type=pd.DataFrame)
-    return df.to_markdown()
+    return get_sample_md_pd(df, n)
 
 
 def get_table_schema(obj: SqlQuery, connection: DuckDBPyConnection) -> dg.TableSchema:
