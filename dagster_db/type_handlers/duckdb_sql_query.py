@@ -61,7 +61,6 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
                 if obj_db is not None
                 else {}
             ),
-            "rows": dg.IntMetadataValue(get_rows(obj, connection)),
             **(
                 {
                     "table_schema": dg.TableSchemaMetadataValue(
@@ -72,15 +71,16 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
                 else {}
             ),
             **(
-                {"query_raw": dg.MarkdownMetadataValue(str(obj_db.template))}
-                if obj_db is not None
-                else {}
-            ),
-            **(
                 {"query_rendered": dg.MarkdownMetadataValue(obj_db.markdown)}
                 if obj_db is not None
                 else {}
             ),
+            **(
+                {"query_raw": dg.MarkdownMetadataValue(str(obj_db.template))}
+                if obj_db is not None
+                else {}
+            ),
+            "rows": dg.IntMetadataValue(get_rows(obj, connection)),
         }
 
     def _load_into_db(
