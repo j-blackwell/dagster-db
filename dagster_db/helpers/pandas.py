@@ -14,7 +14,7 @@ def get_sample_md(
 
     cols_and_types = []
     for col in obj.columns:
-        col_and_type = f"{col}<br>**_\\<{obj[col].dtype}\\>_**"
+        col_and_type = f"{col} <br>**_\\<{obj[col].dtype}\\>_**"
         cols_and_types.append(col_and_type)
 
     df = obj.copy()
