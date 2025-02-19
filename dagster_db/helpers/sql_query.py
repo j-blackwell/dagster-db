@@ -5,7 +5,7 @@ import dagster as dg
 from duckdb import DuckDBPyConnection
 from dagster_db.helpers.duckdb import execute_duckdb
 from dagster_db.query.sql_query import SqlExpr, SqlQuery
-from dagster_db.helpers.pandas import get_sample_md as get_sample_md_pd
+from dagster_db.helpers.polars import get_sample_md as get_sample_md_pl
 
 
 def get_sample_md(
@@ -21,8 +21,8 @@ def get_sample_md(
         order_by=order_by,
         n=n,
     )
-    df = execute_duckdb(sample_query, connection, return_type=pd.DataFrame)
-    return get_sample_md_pd(df, n)
+    df = execute_duckdb(sample_query, connection, return_type=pl.DataFrame)
+    return get_sample_md_pl(df, n)
 
 
 def get_table_schema(obj: SqlQuery, connection: DuckDBPyConnection) -> dg.TableSchema:

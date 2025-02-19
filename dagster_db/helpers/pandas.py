@@ -4,7 +4,14 @@ import numpy as np
 import dagster as dg
 
 
-def get_sample_md(obj: pd.DataFrame, n_max=10) -> Optional[str]:
+def get_sample_md(
+    obj: pd.DataFrame,
+    n_max=10,
+    dtypes: Optional[dict[str, str]] = None,
+) -> Optional[str]:
+    if dtypes is None:
+        dtypes = obj.dtypes.to_dict()
+
     cols_and_types = []
     for col in obj.columns:
         col_and_type = f"{col}<br>**_\\<{obj[col].dtype}\\>_**"

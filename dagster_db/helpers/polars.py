@@ -7,8 +7,9 @@ from dagster_db.helpers.pandas import get_sample_md as get_sample_md_pd
 
 
 def get_sample_md(obj: pl.DataFrame, n_max=10) -> Optional[str]:
+    dtypes_pl = {k: str(v) for k, v in obj.schema.items()}
     obj_pd = obj.sample(min(n_max, obj.height)).to_pandas()
-    return get_sample_md_pd(obj_pd, n_max=n_max)
+    return get_sample_md_pd(obj_pd, n_max=n_max, dtypes=dtypes_pl)
 
 
 def get_summary_md(obj: pl.DataFrame) -> Optional[str]:
