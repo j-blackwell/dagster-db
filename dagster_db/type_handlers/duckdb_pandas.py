@@ -47,12 +47,12 @@ class DuckDbPandasTypeHandler(CustomDbTypeHandler[pd.DataFrame, DuckDBPyConnecti
                 if obj_db is not None
                 else {}
             ),
-            "rows": dg.IntMetadataValue(obj.shape[0]),
             **(
                 {"table_schema": dg.TableSchemaMetadataValue(get_table_schema(obj_db))}
                 if obj_db is not None
                 else {}
             ),
+            "rows": dg.IntMetadataValue(obj.shape[0]),
         }
 
     def _load_into_db(

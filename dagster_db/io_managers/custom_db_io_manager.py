@@ -63,7 +63,7 @@ class CustomDbIOManager(DbIOManager):
             obj_db = handler.db_safe_transformations(context, obj, conn)
             handler.validate_obj_db(context, obj_db, conn)
 
-            context.log.debug("all validation successful")
+            context.log.debug("All validation successful")
             super().handle_output(context, obj)
             t1 = time.perf_counter()
             context.add_output_metadata(
