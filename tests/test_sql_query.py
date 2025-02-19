@@ -19,6 +19,9 @@ def test_sql_query_unbound():
 
 
 def test_sql_query_simple():
+    """
+    Not always supposed to be valid SQL, but to test common uses.
+    """
     query_int = SqlQuery("SELECT {{ my_int }}", my_int=1)
     assert query_int.render() == "SELECT 1"
 
@@ -37,9 +40,6 @@ def test_sql_query_simple():
     query_dt3 = SqlQuery("SELECT {{ my_dt }}", my_dt=Timestamp("2023-01-01"))
     assert query_dt3.render() == "SELECT '2023-01-01 00:00:00'"
 
-    query_list = SqlQuery("SELECT {{ my_list }}", my_list=[1, 2])
-    assert query_list.render() == "SELECT (1,2)"
-
     query_expr = SqlQuery("SELECT {{ my_expr }}", my_expr=SqlExpr("RANDOM()"))
     assert query_expr.render() == "SELECT RANDOM()"
 
@@ -48,6 +48,43 @@ def test_sql_query_simple():
 
     query_nested = SqlQuery("SELECT {{ query_int }}", query_int=query_int)
     assert query_nested.render() == "SELECT (SELECT 1)"
+
+    query_list_int = SqlQuery("SELECT {{ my_list }}", my_list=[1, 2])
+    assert query_list_int.render() == "SELECT (1, 2)"
+
+    query_list_str = SqlQuery("SELECT {{ my_list }}", my_list=["1", "2"])
+    assert query_list_str.render() == "SELECT ('1', '2')"
+
+    query_list_expr = SqlQuery(
+        "SELECT {{ my_list }}",
+        my_list=[
+            SqlExpr("RANDOM()"),
+            SqlExpr("CASE WHEN RANDOM() > 0.5 THEN 1 ELSE 0 END"),
+        ],
+    )
+    assert (
+        query_list_expr.render()
+        == "SELECT RANDOM(),\nCASE WHEN RANDOM() > 0.5 THEN 1 ELSE 0 END"
+    )
+
+    query_list_col = SqlQuery(
+        "SELECT {{ my_list }}",
+        my_list=[SqlColumn("my_col"), SqlColumn("my_col1")],
+    )
+    assert query_list_col.render() == "SELECT `my_col`,\n`my_col1`"
+
+    query_list_mix = SqlQuery(
+        "SELECT {{ my_list }}",
+        my_list=[SqlColumn("my_col"), SqlExpr("RANDOM()")],
+    )
+    assert query_list_mix.render() == "SELECT `my_col`,\nRANDOM()"
+
+    query_list_mix_bad = SqlQuery(
+        "SELECT {{ my_list }}",
+        my_list=[SqlColumn("my_col"), "test"],
+    )
+    with pytest.raises(ValueError):
+        query_list_mix_bad.render()
 
 
 def test_sql_query_methods():
@@ -65,3 +102,29 @@ def test_sql_query_methods():
     # no error
     query = SqlQuery("SELECT {{ my_int }}")
     query.render(my_int=1)
+
+
+def test_sql_query_complex_jinja():
+    query = SqlQuery(
+        """{% set columns = [ 'last_name', 'username', 'email' ] %}
+{%- for value in columns %}
+	{{ value }}
+	{%- if not loop.last -%},{% endif -%}
+{% endfor %}"""
+    )
+
+    query_rendered_expected = "\n\tlast_name," "\n\tusername," "\n\temail"
+    assert query.render() == query_rendered_expected
+
+    query = SqlQuery(
+        """{% for payment_method in ["bank_transfer", "credit_card", "gift_card"] %}
+sum(case when payment_method = '{{payment_method}}' then amount end) as {{payment_method}}_amount,
+{% endfor %}"""
+    )
+
+    query_rendered_expected = (
+        "\nsum(case when payment_method = 'bank_transfer' then amount end) as bank_transfer_amount,\n"
+        "\nsum(case when payment_method = 'credit_card' then amount end) as credit_card_amount,\n"
+        "\nsum(case when payment_method = 'gift_card' then amount end) as gift_card_amount,\n"
+    )
+    assert query.render() == query_rendered_expected
