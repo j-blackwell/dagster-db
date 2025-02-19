@@ -29,12 +29,33 @@ class SqlQuery:
     def add_bindings(self, *args: t.Any, **kwargs: t.Any):
         self.bindings = self.bindings | dict(*args, **kwargs)
 
+    def _is_sql(self, value: t.Any) -> bool:
+        if isinstance(value, (SqlQuery, SqlColumn, SqlExpr)):
+            return True
+        elif isinstance(value, (list, set)):
+            values_is_sql = [self._is_sql(x) for x in value]
+            if all(values_is_sql) != any(values_is_sql):
+                raise ValueError(
+                    f"{value=} is a list that contains a mixture of 'value' and 'sql' types."
+                )
+            return any(values_is_sql)
+        else:
+            return False
+
     def _render_value(self, value: t.Any) -> str:
         if isinstance(value, SqlQuery):
             return f"({value.render()})"
         elif isinstance(value, list):
+            if self._is_sql(value):
+                sep = ",\n"
+                format_str = "{}"
+            else:
+                sep = ", "
+                format_str = "({})"
+
             values_list = [self._render_value(v) for v in value]
-            return f"({','.join(values_list)})"
+            values_rendered = sep.join(values_list)
+            return format_str.format(values_rendered)
         elif isinstance(value, (dt.datetime, dt.date, Timestamp)):
             return f"'{str(value)}'"
         elif isinstance(value, str):
