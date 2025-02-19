@@ -7,12 +7,13 @@ import dagster as dg
 def get_sample_md(obj: pd.DataFrame, n_max=10) -> Optional[str]:
     cols_and_types = []
     for col in obj.columns:
-        col_and_type = f"{col} <br/> --- <br/> \<{obj[col].dtype}\>"
+        col_and_type = f"{col} **_\<{obj[col].dtype}\>_**"
         cols_and_types.append(col_and_type)
 
-    obj.columns = cols_and_types
+    df = obj.copy()
+    df.columns = cols_and_types
     return (
-        obj.sample(n=min(n_max, obj.shape[0])).astype("string").fillna("").to_markdown()
+        df.sample(n=min(n_max, obj.shape[0])).astype("string").fillna("").to_markdown()
     )
 
 
