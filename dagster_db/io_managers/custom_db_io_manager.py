@@ -69,7 +69,7 @@ class CustomDbIOManager(DbIOManager):
             context.add_output_metadata(
                 {
                     **handler.metadata(context, obj, obj_db, conn),
-                    "io_time": dg.FloatMetadataValue(t1 - t0),
+                    "io_time_seconds": dg.FloatMetadataValue(round(t1 - t0, 3)),
                 }
             )
 
@@ -102,7 +102,7 @@ class CustomDbIOManager(DbIOManager):
                         None,
                         connection=conn,
                     ),
-                    "io_time": dg.FloatMetadataValue(t1 - t0),
+                    "io_time_seconds": dg.FloatMetadataValue(round(t1 - t0, 3)),
                 }
             )
         return obj
