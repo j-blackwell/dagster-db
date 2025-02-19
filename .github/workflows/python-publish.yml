@@ -28,7 +28,7 @@ jobs:
 
       - name: Run test
         run: |-
-          uv sync --all-groups
+          uv sync --all-groups --all-extras
           uv run pytest
 
   release-build:
