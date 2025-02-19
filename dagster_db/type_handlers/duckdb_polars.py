@@ -96,7 +96,7 @@ class DuckDbPolarsTypeHandler(CustomDbTypeHandler[pl.DataFrame, DuckDBPyConnecti
                 },
                 max_retries=1,
             )
-        except BinderException:
+        except BinderException as e:
             obj_existing = self.load_input(context, table_slice, connection)
             msg = f"""`obj` incompatible with existing table
 
@@ -107,6 +107,7 @@ class DuckDbPolarsTypeHandler(CustomDbTypeHandler[pl.DataFrame, DuckDBPyConnecti
             {obj_existing.glimpse()}
             """
             context.log.error(msg)
+            raise e
 
         return
 

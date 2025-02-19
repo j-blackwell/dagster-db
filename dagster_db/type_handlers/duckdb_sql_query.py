@@ -128,7 +128,7 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
                 },
                 max_retries=1,
             )
-        except BinderException:
+        except BinderException as e:
             obj_existing = self.load_input(context, table_slice, connection)
             msg = f"""`obj` incompatible with existing table
 
@@ -139,6 +139,7 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
             {glimpse(obj_existing, connection)}
             """
             context.log.error(msg)
+            raise e
 
         return
 

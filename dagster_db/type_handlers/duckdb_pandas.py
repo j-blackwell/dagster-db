@@ -98,7 +98,7 @@ class DuckDbPandasTypeHandler(CustomDbTypeHandler[pd.DataFrame, DuckDBPyConnecti
                 },
                 max_retries=1,
             )
-        except BinderException:
+        except BinderException as e:
             obj_existing = self.load_input(context, table_slice, connection)
             msg = f"""`obj` incompatible with existing table
 
@@ -109,6 +109,7 @@ class DuckDbPandasTypeHandler(CustomDbTypeHandler[pd.DataFrame, DuckDBPyConnecti
             {glimpse(obj_existing)}
             """
             context.log.error(msg)
+            raise e
         return
 
     def load_input(
