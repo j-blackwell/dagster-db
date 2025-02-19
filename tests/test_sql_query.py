@@ -65,3 +65,29 @@ def test_sql_query_methods():
     # no error
     query = SqlQuery("SELECT {{ my_int }}")
     query.render(my_int=1)
+
+
+def test_sql_query_complex_jinja():
+    query = SqlQuery(
+        """{% set columns = [ 'last_name', 'username', 'email' ] %}
+{%- for value in columns %}
+	{{ value }}
+	{%- if not loop.last -%},{% endif -%}
+{% endfor %}"""
+    )
+
+    query_rendered_expected = "\n\tlast_name," "\n\tusername," "\n\temail"
+    assert query.render() == query_rendered_expected
+
+    query = SqlQuery(
+        """{% for payment_method in ["bank_transfer", "credit_card", "gift_card"] %}
+sum(case when payment_method = '{{payment_method}}' then amount end) as {{payment_method}}_amount,
+{% endfor %}"""
+    )
+
+    query_rendered_expected = (
+        "\nsum(case when payment_method = 'bank_transfer' then amount end) as bank_transfer_amount,\n"
+        "\nsum(case when payment_method = 'credit_card' then amount end) as credit_card_amount,\n"
+        "\nsum(case when payment_method = 'gift_card' then amount end) as gift_card_amount,\n"
+    )
+    assert query.render() == query_rendered_expected
