@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dagster-db"
-version = "0.2.4"
+version = "0.2.5"
 description = "Dagster IO managers and type handlers for databases"
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
