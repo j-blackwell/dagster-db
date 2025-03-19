@@ -21,9 +21,10 @@ class SqlQuery:
     :**kwargs: bindings for the template.
     """
 
-    def __init__(self, template_string: str, **kwargs):
+    def __init__(self, template_string: str, sql_dialect: str = "duckdb", **kwargs):
         env = Environment(undefined=StrictUndefined)
         self.template: Template = env.from_string(template_string)
+        self.sql_dialect = sql_dialect
         self.bindings = kwargs
 
     def add_bindings(self, *args: t.Any, **kwargs: t.Any):
