@@ -1,6 +1,7 @@
 import dagster as dg
 from typing import Sequence, Type
 from dagster._core.storage.db_io_manager import TableSlice
+from dagster_db.exceptions.failures import DbTablesIncompatibleFailure
 from duckdb import BinderException, DuckDBPyConnection, IOException
 from dagster_duckdb.io_manager import DuckDbClient
 from dagster._utils.backoff import backoff
@@ -130,16 +131,10 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
             )
         except BinderException as e:
             obj_existing = self.load_input(context, table_slice, connection)
-            msg = f"""`obj` incompatible with existing table
-
-            `obj`
-            {glimpse(obj, connection)}
-
-            `obj_existing`
-            {glimpse(obj_existing, connection)}
-            """
-            context.log.error(msg)
-            raise e
+            raise DbTablesIncompatibleFailure(
+                {"obj": obj, "obj_existing": obj_existing},
+                connection,
+            )
 
         return
 
