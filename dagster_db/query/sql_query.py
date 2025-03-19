@@ -17,13 +17,17 @@ class SqlQuery:
     As a result, SqlExpr and SqlColumn have been created to allow no qoutes,
     or back-ticks (or another column name identifier) to be added when rendered.
 
-    :param template_string: Jinja2-template string to be rendered.
-    :**kwargs: bindings for the template.
+    Args:
+        template_string: Jinja2-template string to be rendered.
+        sql_dialect: The SQL dialect that the query is written in so it can be translated to the
+            database-specific dialect.
+        **kwargs: bindings for the template.
     """
 
-    def __init__(self, template_string: str, **kwargs):
+    def __init__(self, template_string: str, sql_dialect: str = "duckdb", **kwargs):
         env = Environment(undefined=StrictUndefined)
         self.template: Template = env.from_string(template_string)
+        self.sql_dialect = sql_dialect
         self.bindings = kwargs
 
     def add_bindings(self, *args: t.Any, **kwargs: t.Any):
