@@ -31,11 +31,32 @@ whereas we'd have to do this manually using the resources.
 
 ### Standardised features and metadata
 
-When you use an IO manager, you also get the opportunity to add features, such
-as adding useful metadata, primary key validation, etc. without doing this
-within asset code in each asset.
+When you use any IO manager in dagster, dagster truncates the table for you,
+before inserting the records. Using database resources, you would
+have to make all of these database calls yourself.
 
-It allows the continued separation of IO code and business logic which is such
+``` py
+
+@dg.asset(deps=[my_asset_upstream])
+def my_asset_downstream(duckdb: DuckDbResource):
+    my_asset_downstream_query = "SELECT *, True AS new_col FROM my_asset_upstream"
+    duckdb.sql("DELETE FROM my_asset_downstream")
+    duckdb.sql(f"INSERT INTO my_asset_downstream ({my_asset_downstream_query})")
+```
+
+vs.
+
+``` py
+@dg.asset()
+def my_asset_downstream(my_asset_upstream: SqlQuery):
+    return SqlQuery("SELECT *, True AS new_col FROM {{ my_asset_upstream }}", my_asset_upstream=my_asset_upstream)
+```
+
+You also get the opportunity to add features to your IO manager, such
+as adding useful metadata, primary key validation, etc. that apply to every asset
+without having to call manually within asset code in each asset.
+
+Therefore, tt allows the continued separation of IO code and business logic which is such
 a great feature of dagster.
 
 ## duckdb
