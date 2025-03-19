@@ -14,7 +14,47 @@ logic into an io-manager ready framework.
 
 Use `TypeHandlers` out of the box, or extend to implement custom behaviours.
 
-## Why should you use this over database resources?
+## duckdb
+
+### Installation
+
+```bash
+uv add dagster-db[duckdb]
+```
+
+### Definition
+
+```py
+import dagster as dg
+from dagster_db import build_custom_duckdb_io_manager
+custom_io_manager = build_custom_duckdb_io_manager().configured({"database": "./.tmp/database.duckdb"})
+
+defs = dg.Definitions(
+    ...,
+    resources={"io_manager": custom_io_manager},
+)
+```
+
+### Usage
+
+```py
+import dagster as dg
+import polars as pl
+from dagster_db import SqlQuery
+
+@dg.asset
+def my_asset(context: dg.AssetExecutionContext) -> pl.DataFrame:
+    return pl.DataFrame({"a": [1, 2, 3]})
+
+@dg.asset
+def my_asset_downstream(
+    context: dg.AssetExecutionContext,
+    my_asset: SqlQuery,
+) -> SqlQuery:
+    return SqlQuery("SELECT *, a+1 AS b FROM {{ my_asset }}", my_asset)
+```
+
+## Why should I use `dagster-db` instead of just querying via database resources?
 
 ### Partitioned assets
 
@@ -59,42 +99,10 @@ without having to call manually within asset code in each asset.
 Therefore, tt allows the continued separation of IO code and business logic which is such
 a great feature of dagster.
 
-## duckdb
+### Different databases in different environments
 
-### Installation
-
-```bash
-uv add dagster-db[duckdb]
-```
-
-### Definition
-
-```py
-import dagster as dg
-from dagster_db import build_custom_duckdb_io_manager
-custom_io_manager = build_custom_duckdb_io_manager().configured({"database": "./.tmp/database.duckdb"})
-
-defs = dg.Definitions(
-    ...,
-    resources={"io_manager": custom_io_manager},
-)
-```
-
-### Usage
-
-```py
-import dagster as dg
-import polars as pl
-from dagster_db import SqlQuery
-
-@dg.asset
-def my_asset(context: dg.AssetExecutionContext) -> pl.DataFrame:
-    return pl.DataFrame({"a": [1, 2, 3]})
-
-@dg.asset
-def my_asset_downstream(
-    context: dg.AssetExecutionContext,
-    my_asset: SqlQuery,
-) -> SqlQuery:
-    return SqlQuery("SELECT *, a+1 AS b FROM {{ my_asset }}", my_asset)
-```
+Many workflows may consist of a duckdb database for local development, but bigquery or
+postgresql for production.
+These clients and resources have completely different method names and arguments.
+The best place to handle these differences, would be in `TypeHandlers`, which would
+clear your asset of further IO code.
