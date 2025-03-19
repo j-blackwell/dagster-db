@@ -14,6 +14,30 @@ logic into an io-manager ready framework.
 
 Use `TypeHandlers` out of the box, or extend to implement custom behaviours.
 
+## Why should you use this over database resources?
+
+### Partitioned assets
+
+If you have a partitioned asset, then when you use it in a downstream asset,
+it will need to be filtered for the partition we are running for (via the
+partition mapping). The IO manager already handles this using table slice
+functionality.
+
+e.g. so if you have a date partitioned asset `my_asset`, when you create a SQL
+query: `SELECT * FROM {{ my_asset }}`  in a downstream asset, we get the
+partition selection for free. The `load_input` methods can render this into
+`SELECT * FROM (SELECT * FROM my_asset WHERE partition_expr >= ... AND partition_expr < ...)`,
+whereas we'd have to do this manually using the resources.
+
+### Standardised features and metadata
+
+When you use an IO manager, you also get the opportunity to add features, such
+as adding useful metadata, primary key validation, etc. without doing this
+within asset code in each asset.
+
+It allows the continued separation of IO code and business logic which is such
+a great feature of dagster.
+
 ## duckdb
 
 ### Installation
