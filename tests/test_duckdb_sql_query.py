@@ -44,3 +44,21 @@ def test_duckdb_sql_query_downstream(resources: dict[str, Any]):
         resources=resources,
     )
     assert result.success
+
+
+def test_duckdb_sql_query_convert_dialect(resources: dict[str, Any]):
+    @dg.asset
+    def test_duckdb_sql_query_asset_dialect(
+        context: dg.AssetExecutionContext
+    ) -> SqlQuery:
+        query = SqlQuery(
+            'SELECT FORMAT_DATETIME("%c", DATETIME "2008-12-25 15:30:00")',
+            sql_dialect="bigquery",
+        )
+        return query
+
+    result = dg.materialize(
+        [test_duckdb_sql_query_asset_dialect],
+        resources=resources,
+    )
+    assert result.success

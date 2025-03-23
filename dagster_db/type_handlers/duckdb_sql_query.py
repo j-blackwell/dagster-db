@@ -4,6 +4,7 @@ from dagster._core.storage.db_io_manager import TableSlice
 from duckdb import BinderException, DuckDBPyConnection, IOException
 from dagster_duckdb.io_manager import DuckDbClient
 from dagster._utils.backoff import backoff
+from sqlglot import transpile
 
 from dagster_db.helpers.generic_db import table_slice_to_schema_table
 from dagster_db.helpers.duckdb import execute_duckdb
@@ -24,6 +25,10 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
     """
 
     @property
+    def sql_dialect(self) -> str:
+        return "duckdb"
+
+    @property
     def supported_types(self) -> Sequence[Type[object]]:
         return [SqlQuery]
 
@@ -41,7 +46,16 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
         obj: SqlQuery,
         connection: DuckDBPyConnection,
     ) -> SqlQuery:
-        return obj
+        obj_rendered = obj.render()
+        obj_translated = SqlQuery(
+            transpile(
+                obj_rendered,
+                read=obj.sql_dialect,
+                write=self.sql_dialect,
+            )[0]
+        )
+
+        return obj_translated
 
     def metadata(
         self,
@@ -51,11 +65,19 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
         connection: DuckDBPyConnection,
     ):
         return {
-            "sample_obj": dg.MarkdownMetadataValue(get_sample_md(obj, connection)),
+            "sample_obj": dg.MarkdownMetadataValue(
+                get_sample_md(
+                    obj_db if obj_db is not None else obj,
+                    connection,
+                )
+            ),
             **(
                 {
                     "sample_obj_db": dg.MarkdownMetadataValue(
-                        get_sample_md(obj_db, connection)
+                        get_sample_md(
+                            obj_db if obj_db is not None else obj,
+                            connection,
+                        )
                     )
                 }
                 if obj_db is not None
@@ -64,7 +86,10 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
             **(
                 {
                     "table_schema": dg.TableSchemaMetadataValue(
-                        get_table_schema(obj_db, connection)
+                        get_table_schema(
+                            obj_db if obj_db is not None else obj,
+                            connection,
+                        )
                     )
                 }
                 if obj_db is not None
@@ -80,7 +105,12 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
                 if obj_db is not None
                 else {}
             ),
-            "rows": dg.IntMetadataValue(get_rows(obj, connection)),
+            "rows": dg.IntMetadataValue(
+                get_rows(
+                    obj_db if obj_db is not None else obj,
+                    connection,
+                )
+            ),
         }
 
     def _load_into_db(
@@ -123,17 +153,18 @@ class DuckDbSqlQueryTypeHandler(CustomDbTypeHandler[SqlQuery, DuckDBPyConnection
                 retry_on=(IOException,),
                 kwargs={
                     "table_schema": table_schema,
-                    "obj": obj,
+                    "obj": self.db_safe_transformations(context, obj, connection),
                     "connection": connection,
                 },
                 max_retries=1,
             )
         except BinderException as e:
             obj_existing = self.load_input(context, table_slice, connection)
+            obj_db = self.db_safe_transformations(context, obj, connection)
             msg = f"""`obj` incompatible with existing table
 
             `obj`
-            {glimpse(obj, connection)}
+            {glimpse(obj_db, connection)}
 
             `obj_existing`
             {glimpse(obj_existing, connection)}
